@@ -6,7 +6,6 @@ to understand what is going on.
 import re
 import copy
 import sys
-from policy_sentry.shared.arns import get_service_from_arn, does_arn_match
 from sqlalchemy import and_
 from policy_sentry.shared.database import ActionTable, ArnTable
 from policy_sentry.shared.arns import get_service_from_arn, does_arn_match
@@ -145,7 +144,10 @@ class PolicyCollection:
             },
             'KmsReadKmskey': {
                 'name': 'KmsReadKmskey',
-                'actions': ['kms:describekey', 'kms:getkeypolicy', 'kms:getkeyrotationstatus', 'kms:getparametersforimport', 'kms:getpublickey', 'kms:listresourcetags']
+                'actions': [
+                    'kms:describekey', 'kms:getkeypolicy', 'kms:getkeyrotationstatus',
+                    'kms:getparametersforimport', 'kms:getpublickey', 'kms:listresourcetags'
+                ]
                 'arns': ['arn:aws:kms:us-east-1:123456789012:key/123456']
             }
         }
@@ -332,6 +334,8 @@ def process_crud_cfg(policy_collection_obj, cfg, db_session):
         print("IndexError: list index out of range. This is likely due to an ARN in your list equaling ''. "
               "Please evaluate your YML file and try again.")
         sys.exit()
+    arn_dict = policy_collection_obj.get_policy_elements(db_session)
+    return arn_dict
 
 
 def process_actions_cfg(supplied_actions, db_session):
@@ -412,14 +416,3 @@ def capitalize_first_character(some_string):
     """
     return ' '.join(''.join([w[0].upper(), w[1:].lower()])
                     for w in some_string.split())
-
-
-# TODO: Cleanup functions
-#   remove_sids_with_empty_action_lists
-#   remove_actions_duplicated_in_wildcard_resources
-#   self.combine_policy_elements
-
-# TODO: Actions mode stuff:
-#   self.remove_actions_not_matching_list
-#   self.process_list_of_actions
-

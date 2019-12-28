@@ -10,6 +10,7 @@ from policy_sentry.shared.policy import ArnActionGroup
 from policy_sentry.shared.roles import Roles
 from policy_sentry.shared.file import read_yaml_file
 from policy_sentry.shared.constants import DATABASE_FILE_PATH, POLICY_LANGUAGE_VERSION
+from policy_sentry.shared.policy_collection import PolicyCollection, process_actions_cfg, process_crud_cfg
 
 
 def print_policy(
@@ -45,9 +46,12 @@ def write_policy_with_access_levels(cfg, db_session, minimize_statement=False):
     """
     Writes an IAM policy given a dict containing Access Levels and ARNs.
     """
-    arn_action_group = ArnActionGroup()
-    arn_dict = arn_action_group.process_resource_specific_acls(cfg, db_session)
-    policy = print_policy(arn_dict, db_session, minimize_statement)
+    # arn_action_group = ArnActionGroup()
+    # arn_dict = arn_action_group.process_resource_specific_acls(cfg, db_session)
+    # policy = print_policy(arn_dict, db_session, minimize_statement)
+    policy_collection = PolicyCollection()
+    policy_collection = process_crud_cfg(policy_collection, cfg, db_session)
+    policy = print_policy(policy_collection, db_session, minimize_statement)
     return policy
 
 
