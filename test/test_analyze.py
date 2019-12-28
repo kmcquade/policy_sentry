@@ -236,7 +236,7 @@ class AnalyzeActionsTestCase(unittest.TestCase):
                         # These ones are permissions management
                         "iam:CreateAccessKey",
                         "iam:DeleteAccessKey",
-                        "iam:UpdateAccessKey"
+                        "iam:UpdateAccessKey",
                         # This one is not
                         "iam:ListAccessKeys",
                     ],
@@ -250,6 +250,7 @@ class AnalyzeActionsTestCase(unittest.TestCase):
             'ecr:setrepositorypolicy',
             'iam:createaccesskey',
             'iam:deleteaccesskey',
+            'iam:updateaccesskey',
             'secretsmanager:deleteresourcepolicy'
         ]
         self.maxDiff = None

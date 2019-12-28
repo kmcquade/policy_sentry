@@ -41,23 +41,27 @@ class ArnActionGroup:
 
         :param db_session: SQLAlchemy database session
         :param arn_list_from_user: Just a list of resource ARNs.
-        :param access_level: "Read", "List", "Tagging", "Write", or "Permissions management"
+            Example: ['arn:aws:s3:::example-org-flow-logs', 'arn:aws:s3:::example-org-sbx-vmimport/stuff']
+        :param access_level: the literal name of the access level, without capitalization changes.
+            Choices: "Read", "List", "Tagging", "Write", or "Permissions management"
         """
+
         for arn_from_user in arn_list_from_user:
+            # arn_from_user: arn:aws:s3:::example-org-flow-logs
             service = get_service_from_arn(arn_from_user)
             for row in db_session.query(ActionTable).filter(
                     ActionTable.service.like(service)):
+                # row.resource_arn_format = arn:${Partition}:s3:::${BucketName}
                 if does_arn_match(arn_from_user, row.resource_arn_format):
-                    if row.access_level == access_level:
+                    if row.access_level == access_level:  # access_level = "List"
                         # If it's not a key in the dictionary, add it as a key
                         # and then add the item in the list
-                        raw_arn_format = row.resource_arn_format
                         temp_arn_dict = {
-                            'arn': arn_from_user,
-                            'service': service,
-                            'access_level': access_level,
-                            'arn_format': raw_arn_format,
-                            'actions': []
+                            'arn': arn_from_user,  # arn:aws:s3:::example-org-flow-logs
+                            'service': service,  # s3
+                            'access_level': access_level,  # List
+                            'arn_format': row.resource_arn_format,  # arn:${Partition}:s3:::${BucketName}
+                            'actions': []  # Blank. This will be updated in place by update_actions_for_raw_arn_format
                         }
 
                         # If there is already an entry, skip it to avoid duplicates
@@ -69,11 +73,11 @@ class ArnActionGroup:
     # pylint: disable=too-many-arguments
     def add_complete_entry(
             self,
-            arn_from_user,
-            service,
-            access_level,
-            raw_arn_format,
-            actions_list):
+            arn_from_user,  # arn:aws:s3:::example-org-flow-logs
+            service,  # s3
+            access_level,  # List
+            raw_arn_format,  # arn:${Partition}:s3:::${BucketName}
+            actions_list):  # ['s3:ListBucket'
         """
         Add a single entry with all the necessary fields filled out.
         :param arn_from_user:
@@ -110,10 +114,9 @@ class ArnActionGroup:
                     for principal in cfg[category]:
                         if 'wildcard' in principal.keys():
                             if principal['wildcard'] is not None:
-                                provided_wildcard_actions = principal['wildcard']
-                                if isinstance(provided_wildcard_actions, list):
+                                if isinstance(principal['wildcard'], list):
                                     verified_wildcard_actions = remove_actions_that_are_not_wildcard_arn_only(
-                                        db_session, provided_wildcard_actions)
+                                        db_session, principal['wildcard'])
                                     if len(verified_wildcard_actions) > 0:
                                         self.process_list_of_actions(
                                             verified_wildcard_actions, db_session)
@@ -140,9 +143,6 @@ class ArnActionGroup:
                                 self.add(
                                     db_session, principal['tag'], "Tagging")
 
-        # except KeyError as e:
-        #     print("Yaml file is missing this block: " + e.args[0])
-        #     sys.exit()
         except IndexError:
             print("IndexError: list index out of range. This is likely due to an ARN in your list equaling ''. "
                   "Please evaluate your YML file and try again.")
@@ -205,7 +205,6 @@ class ArnActionGroup:
         if len(actions_with_wildcard) > 0:
             self.add_complete_entry(
                 '*', 'Mult', 'Mult', '*', actions_with_wildcard)
-        # NOTE avoid final and other qualifiers IMHO
         arn_dict = self.get_policy_elements(db_session)
         return arn_dict
 
@@ -348,12 +347,25 @@ class ArnActionGroup:
 
     def get_policy_elements(self, db_session):
         """
-
         :param db_session: database session.
         :return: arn_dict. This is a dictionary of dictionaries. Each sub-dictionary has the following elements:
           1. name: The SID namespace. This follows the format of {Servicename} + {Accesslevel} + {Resourcetypename}.
           2. actions: A list of actions
           3. arns: A list of resource ARNs that fall under this namespace.
+
+        Example:
+        arn_dict = {
+            'S3ReadBucket': {
+                'name': 'S3ListBucket',
+                'actions': ['s3:listbucket'],
+                'arns': ['arn:aws:s3:::example-org-flow-logs']
+            },
+            'KmsReadKmskey': {
+                'name': 'KmsReadKmskey',
+                'actions': ['kms:describekey', 'kms:getkeypolicy', 'kms:getkeyrotationstatus', 'kms:getparametersforimport', 'kms:getpublickey', 'kms:listresourcetags']
+                'arns': ['arn:aws:kms:us-east-1:123456789012:key/123456']
+            }
+        }
         """
         arn_dict = {}
         for i in range(len(self.arns)):
@@ -389,7 +401,10 @@ class ArnActionGroup:
 
 def create_policy_sid_namespace(service, access_level, resource_type_name):
     """
-    Description: Simply generates the SID name. The SID groups ARN types that share an access level. For example, S3 objects vs. SSM Parameter have different ARN types - as do S3 objects vs S3 buckets. That's how we choose to group them.
+    Description: Simply generates the SID name. The SID groups ARN types that share an access level.
+    For example, S3 objects vs. SSM Parameter have different ARN types - as do S3 objects vs S3 buckets.
+    That's how we choose to group them.
+
     :param service: "ssm"
     :param access_level: "Read"
     :param resource_type_name: "parameter"
