@@ -33,6 +33,11 @@ policy_with_crud_levels:
   # like ssm:DescribeParameters, specify those actions here.
   wildcard:
     - ''
+  # The following are examples of universal Lazy conditions
+  lazy-conditions:
+    - condition_key_string: 'aws:SecureTransport'
+      condition_type_string: 'Bool'
+      condition_value: 'True'
 '''
 
 CRUD_TEMPLATE_DICT = {
@@ -47,6 +52,7 @@ CRUD_TEMPLATE_DICT = {
             'tagging': [],
             'permissions-management': [],
             'wildcard': [],
+            'lazy-conditions': []
         }
     ]
 }

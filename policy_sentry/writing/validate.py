@@ -30,10 +30,41 @@ CRUD_SCHEMA = Schema({
             Optional('permissions-management'): [str],
             Optional('tagging'): [str],
             Optional('wildcard'): [str],
+            Optional('lazy-conditions'): [{
+                    # And('condition_key_string'): str,
+                    # And('condition_type_string'): str,
+                    # And('condition_value'): str,
+                'condition_key_string': str,
+                'condition_type_string': str,
+                'condition_value': str,
+            }],
 
         }
-    ]
+        ]
 })
+# # Schema(
+# #     'condition_key_string': str,
+# #     'condition_type_string': And(str)),
+# #     'condition_value': And(str)),
+# # )
+# Use('condition_key_string'),
+# 'condition_type_string',
+# 'condition_value',
+# # Optional('condition_key_string'): And(str),
+# # Optional('condition_type_string'): And(str)),
+# # Optional('condition_value'): And(str)),
+# )
+# ])
+# ],
+#     'condition_key_string': And(Use(str)),
+#     'condition_type_string': And(Use(str)),
+#     'condition_value': And(Use(str)),
+# ],
+#             ),
+#
+#         }
+#     ]
+# })
 
 ACTIONS_SCHEMA = Schema({
     'policy_with_actions': [

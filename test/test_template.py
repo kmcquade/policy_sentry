@@ -35,6 +35,12 @@ policy_with_crud_levels:
   # If the policy needs to use IAM actions that cannot be restricted to ARNs,
   # like ssm:DescribeParameters, specify those actions here.
   wildcard:
-    - ''"""
+    - ''
+  # The following are examples of universal Lazy conditions
+  lazy-conditions:
+    - condition_key_string: 'aws:SecureTransport'
+      condition_type_string: 'Bool'
+      condition_value: 'True'"""
         crud_template = create_crud_template("myrole")
+        self.maxDiff = None
         self.assertEqual(desired_msg, crud_template)
