@@ -60,14 +60,14 @@ desired_crud_policy = {
             ]
         },
         {
-            'Sid': 'SsmTaggingParameter',
-            'Effect': 'Allow',
-            'Action': [
-                'ssm:addtagstoresource',
-                'ssm:removetagsfromresource'
+            "Sid": "SsmTaggingParameter",
+            "Effect": "Allow",
+            "Resource": [
+                "arn:aws:ssm:us-east-1:123456789012:parameter/test"
             ],
-            'Resource': [
-                'arn:aws:ssm:us-east-1:123456789012:parameter/test'
+            "Action": [
+                "ssm:addtagstoresource",
+                "ssm:removetagsfromresource",
             ],
         }
     ]
@@ -130,7 +130,6 @@ class WritePolicyWithLibraryOnly(unittest.TestCase):
         self.maxDiff = None
         self.assertDictEqual(desired_actions_policy, policy)
 
-    # TODO: Add this test again when you fix the lazy conditions feature
     def test_write_crud_policy_with_library_only(self):
         """test_write_crud_policy_with_library_only: Write an actions mode policy without using the command line at all (library only)"""
         db_session = connect_db('bundled')
@@ -146,7 +145,6 @@ class WritePolicyWithLibraryOnly(unittest.TestCase):
         crud_template['policy_with_crud_levels'][0]['permissions-management'].append("arn:aws:kms:us-east-1:123456789012:key/123456")
         crud_template['policy_with_crud_levels'][0]['wildcard'].extend(wildcard_actions_to_add)
         crud_template['policy_with_crud_levels'][0]['tagging'].append("arn:aws:ssm:us-east-1:123456789012:parameter/test")
-        # crud_template['policy_with_crud_levels'][0]['lazy-conditions'].append([])
         # Modify it
         policy = write_policy_with_access_levels(db_session, crud_template, None)
         # print(json.dumps(policy, indent=4))
