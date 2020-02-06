@@ -11,9 +11,9 @@ policy_with_crud_levels:
     - ram:getresourcepolicies
     - secretsmanager:createsecret
   lazy-conditions:
-    - condition_key_string: "ec2:ResourceTag/purpose"
-      condition_type_string: "StringEquals"
-      condition_value: "test"
+#    - condition_key_string: "ec2:ResourceTag/purpose"
+#      condition_type_string: "StringEquals"
+#      condition_value: "test"
     - condition_key_string: "aws:SecureTransport"
       condition_type_string: "Bool"
       condition_value: "True"

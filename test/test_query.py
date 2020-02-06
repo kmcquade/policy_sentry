@@ -7,7 +7,8 @@ from policy_sentry.querying.actions import get_actions_for_service, get_action_d
     get_actions_matching_condition_crud_and_arn, get_actions_at_access_level_that_support_wildcard_arns_only
 from policy_sentry.querying.arns import get_raw_arns_for_service, get_arn_type_details, \
     get_arn_types_for_service
-from policy_sentry.querying.conditions import get_condition_key_details, get_condition_keys_for_service
+from policy_sentry.querying.conditions import get_condition_key_details, get_condition_keys_for_service, \
+    get_conditions_for_action_and_raw_arn, get_condition_value_type
 from policy_sentry.writing.policy import remove_actions_that_are_not_wildcard_arn_only
 
 db_session = connect_db(DATABASE_FILE_PATH)
@@ -110,23 +111,14 @@ class QueryTestCase(unittest.TestCase):
                     'action': 'ram:createresourceshare',
                     'description': 'Create resource share with provided resource(s) and/or principal(s)',
                     'access_level': 'Permissions management',
-                    'resource_arn_format': 'arn:${Partition}:ram:${Region}:${Account}:resource-share/${ResourcePath}',
-                    'condition_keys': [
-                        'ram:RequestedResourceType',
-                        'ram:ResourceArn',
-                        # 'ram:AllowsExternalPrincipals',
-                        'ram:RequestedAllowsExternalPrincipals'
-                    ],
-                    'dependent_actions': None
-                },
-                {
-                    'action': 'ram:createresourceshare',
-                    'description': 'Create resource share with provided resource(s) and/or principal(s)',
-                    'access_level': 'Permissions management',
                     'resource_arn_format': '*',
                     'condition_keys': [
                         'aws:RequestTag/${TagKey}',
-                        'aws:TagKeys'
+                        'aws:TagKeys',
+                        'ram:RequestedResourceType',
+                        'ram:ResourceArn',
+                        'ram:RequestedAllowsExternalPrincipals',
+                        'ram:Principal'
                     ],
                     'dependent_actions': None
                 }
@@ -134,6 +126,7 @@ class QueryTestCase(unittest.TestCase):
         }
         output = get_action_data(db_session, 'ram', 'createresourceshare')
         self.maxDiff = None
+        print(output)
         self.assertDictEqual(desired_output, output)
 
     def test_get_actions_with_access_level(self):
@@ -173,7 +166,7 @@ class QueryTestCase(unittest.TestCase):
     def test_get_actions_with_arn_type_and_access_level(self):
         """test_get_actions_with_arn_type_and_access_level: Tests a function that gets a list of
         actions in a service under different access levels, specific to an ARN format."""
-        desired_output = ['ram:associateresourceshare', 'ram:createresourceshare', 'ram:deleteresourceshare',
+        desired_output = ['ram:associateresourceshare', 'ram:deleteresourceshare',
                           'ram:disassociateresourceshare', 'ram:updateresourceshare']
         output = get_actions_with_arn_type_and_access_level(db_session, "ram", "resource-share",
                                                                  "Permissions management")
@@ -202,11 +195,13 @@ class QueryTestCase(unittest.TestCase):
         CRUD level, and raw ARN"""
         results = get_actions_matching_condition_crud_and_arn(
             db_session,
-            "ram:ResourceArn",
-            "Permissions management",
-            "arn:${Partition}:ram:${Region}:${Account}:resource-share/${ResourcePath}"
+            "elasticbeanstalk:InApplication",
+            "List",
+            "arn:${Partition}:elasticbeanstalk:${Region}:${Account}:environment/${ApplicationName}/${EnvironmentName}"
         )
-        desired_results = ['ram:createresourceshare']
+        desired_results = [
+            'elasticbeanstalk:describeenvironments',
+        ]
         self.assertListEqual(desired_results, results)
 
     def test_get_actions_matching_condition_crud_and_wildcard_arn(self):
@@ -283,3 +278,28 @@ class QueryTestCase(unittest.TestCase):
         self.maxDiff = None
         self.assertListEqual(desired_output, output)
 
+    def test_get_conditions_for_action_and_raw_arn(self):
+        """get_conditions_for_action_and_raw_arn: Get a list of conditions corresponding to an action and a raw ARN"""
+        # Test with wildcard as ARN
+        desired_condition_keys_list = [
+            'secretsmanager:Name',
+            'secretsmanager:Description',
+            'secretsmanager:KmsKeyId',
+            'aws:RequestTag/tag-key',
+            'aws:TagKeys',
+            'secretsmanager:ResourceTag/tag-key'
+        ]
+        output = get_conditions_for_action_and_raw_arn(db_session, "secretsmanager:createsecret", "*")
+        self.maxDiff = None
+        print(output)
+        self.assertListEqual(desired_condition_keys_list, output)
+
+        # Test with non-wildcard as ARN
+
+    def test_get_condition_value_type(self):
+        desired_result = "Arn"
+        condition_key = "secretsmanager:SecretId"
+        result = get_condition_value_type(db_session, condition_key)
+        self.maxDiff = None
+        print(result)
+        self.assertEqual(desired_result, result)
