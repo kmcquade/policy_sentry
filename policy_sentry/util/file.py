@@ -2,20 +2,21 @@
 Functions that relate to manipulating files, loading files, and managing filepaths.
 """
 import json
-import os.path
-from os import listdir
-from os.path import isfile, join
-
+import logging
+from os import listdir, makedirs
+from os.path import isfile, join, exists
 import yaml
+
+logger = logging.getLogger(__name__)
 
 
 def read_this_file(filename):
     """Read a file at a path and return the lines from each file"""
     lines = []
 
-    with open(filename, 'r') as fileobj:
+    with open(filename, "r") as fileobj:
         for row in fileobj:
-            lines.append(row.rstrip('\n'))
+            lines.append(row.rstrip("\n"))
     return lines
 
 
@@ -25,13 +26,12 @@ def read_yaml_file(filename):
 
     :param filename: name of the yaml file
     :return: dictionary of YAML file contents
-    :
     """
-    with open(filename, 'r') as yaml_file:
+    with open(filename, "r") as yaml_file:
         try:
             cfg = yaml.safe_load(yaml_file)
         except yaml.YAMLError as exc:
-            print(exc)
+            logger.critical(exc)
     return cfg
 
 
@@ -44,12 +44,13 @@ def check_valid_file_path(file):
     :rtype: bool
     """
 
-    if os.path.exists(file):
-        # print("Evaluating: " + file)
+    if exists(file):
         return True
     else:
-        print("File does not exist or is formatted incorrectly: " +
-              file + "\nPlease provide a valid path.")
+        logger.critical(
+            "File does not exist or is formatted incorrectly: %s \nPlease provide a valid path.",
+            file,
+        )
         return False
 
 
@@ -59,11 +60,11 @@ def write_json_file(filename, json_contents):
     :param json_contents: a dictionary used to build the JSON. This is the IAM Policy built by write_policy functions.
     :param filename: name of the yaml file, which should include the path
     """
-    with open(filename, 'w') as file:
+    with open(filename, "w") as file:
         # try:
         json.dump(json_contents, file, indent=4)
         # except yaml.YAMLError as exc:
-        #     print(exc)
+        #     logger.critical(exc)
     # return filename
 
 
@@ -75,7 +76,7 @@ def list_files_in_directory(directory):
 
 def create_directory_if_it_doesnt_exist(directory):
     """Equivalent of mkdir -p"""
-    if os.path.exists(directory):
+    if exists(directory):
         pass
     else:
-        os.makedirs(directory)
+        makedirs(directory)

@@ -1,29 +1,27 @@
-![](http://i.imgur.com/uITz0cM.gif)
-
 # Policy Sentry
+
+IAM Least Privilege Policy Generator and analysis database.
 
 [![Build Status](https://travis-ci.org/salesforce/policy_sentry.svg?branch=master)](https://travis-ci.org/salesforce/policy_sentry)
 [![Documentation Status](https://readthedocs.org/projects/policy-sentry/badge/?version=latest)](https://policy-sentry.readthedocs.io/en/latest/?badge=latest)
 [![Join the chat at https://gitter.im/salesforce/policy_sentry](https://badges.gitter.im/salesforce/policy_sentry.svg)](https://gitter.im/salesforce/policy_sentry?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Downloads](https://pepy.tech/badge/policy-sentry)](https://pepy.tech/project/policy-sentry)
 
-
-IAM Least Privilege Policy Generator, auditor, and analysis database.
+![](https://raw.githubusercontent.com/salesforce/policy_sentry/master/examples/asciinema/policy_sentry.gif)
 
 - [Documentation](#documentation)
 - [Overview](#overview)
-  * [Authoring Secure IAM Policies](#authoring-secure-iam-policies)
+  * [Writing Secure Policies based on Resource Constraints and Access Levels](#writing-secure-policies-based-on-resource-constraints-and-access-levels)
 - [Quickstart](#quickstart)
     + [Installation](#installation)
     + [Shell completion](#shell-completion)
-  * [Initialization](#initialization)
   * [Policy Writing cheat sheet](#policy-writing-cheat-sheet)
   * [IAM Database Query Cheat Sheet](#iam-database-query-cheat-sheet)
-  * [Policy Analysis Cheat Sheet](#policy-analysis-cheat-sheet)
-- [Commands](#commands)
-  * [Usage](#usage)
-  * [Library usage](#library-usage)
+- [Usage](#usage)
+  * [Commands](#commands)
+  * [Python Library usage](#python-library-usage)
   * [Docker](#docker)
-  * [Updating the AWS HTML files](#updating-the-aws-html-files)
+  * [Terraform](#terraform)
 - [References](#references)
 
 ## Documentation
@@ -44,7 +42,11 @@ Writing security-conscious IAM Policies by hand can be very tedious and ineffici
 
 Such a process is not ideal for security or for Infrastructure as Code developers. We need to make it easier to write IAM Policies securely and abstract the complexity of writing least-privilege IAM policies. That's why I made this tool.
 
-### Authoring Secure IAM Policies
+Policy Sentry allows users to create least-privilege IAM policies in a matter of seconds, rather than tediously writing IAM policies by hand. These policies are scoped down according to access levels and resources. In the case of a breach, this helps to limit the blast radius of compromised credentials by only giving IAM principals access to what they need.
+
+**Before this tool, it could take hours to craft the perfect IAM Policy — but now it can take a matter of seconds**. This way, developers only have to determine the resources that they need to access, and **Policy Sentry abstracts the complexity of IAM policies** away from their development processes.
+
+### Writing Secure Policies based on Resource Constraints and Access Levels
 
 Policy Sentry's flagship feature is that it can create IAM policies based on resource ARNs and access levels. Our CRUD functionality takes the opinionated approach that IAC developers shouldn't have to understand the complexities of AWS IAM - we should abstract the complexity for them. In fact, developers should just be able to say...
 
@@ -54,7 +56,7 @@ Policy Sentry's flagship feature is that it can create IAM policies based on res
 
 ...and our automation should create policies that correspond to those access levels.
 
-How do we accomplish this? Well, Policy Sentry leverages the AWS documentation on [Actions, Resources, and Condition Keys](1) documentation to look up the actions, access levels, and resource types, and generates policies according to the ARNs and access levels. Consider the table snippet below:
+How do we accomplish this? Well, Policy Sentry leverages the AWS documentation on [Actions, Resources, and Condition Keys][1] documentation to look up the actions, access levels, and resource types, and generates policies according to the ARNs and access levels. Consider the table snippet below:
 
 <table class="tg">
   <tr>
@@ -97,12 +99,6 @@ To get started, install Policy Sentry:
 pip3 install --user policy_sentry
 ```
 
-Then initialize the IAM database:
-
-```bash
-policy_sentry initialize
-```
-
 To generate a policy according to resources and access levels, start by creating a template with this command so you can just fill out the ARNs:
 
 ```bash
@@ -112,51 +108,57 @@ policy_sentry create-template --name myRole --output-file crud.yml --template-ty
 It will generate a file like this:
 
 ```yaml
-policy_with_crud_levels:
-- name: myRole
-  description: '' # For human auditability
-  role_arn: '' # For human auditability
-  # Insert ARNs under each access level below
-  # If you do not need to use certain access levels, delete them.
-  read:
-    - ''
-  write:
-    - ''
-  list:
-    - ''
-  tagging:
-    - ''
-  permissions-management:
-    - ''
-  # If the policy needs to use IAM actions that cannot be restricted to ARNs,
-  # like ssm:DescribeParameters, specify those actions here.
-  wildcard:
-    - ''
+mode: crud
+name: myRole
+# Specify resource ARNs
+read:
+- ''
+write:
+- ''
+list:
+- ''
+tagging:
+- ''
+permissions-management:
+- ''
+# Actions that do not support resource constraints
+wildcard-only:
+  single-actions: # standalone actions
+  - ''
+  # Service-wide, per access level - like 's3' or 'ec2'
+  service-read:
+  - ''
+  service-write:
+  - ''
+  service-list:
+  - ''
+  service-tagging:
+  - ''
+  service-permissions-management:
+  - ''
 ```
 
 Then just fill it out:
 
 ```yaml
-policy_with_crud_levels:
-- name: myRole
-  description: 'Justification for privileges'
-  role_arn: 'arn:aws:iam::123456789102:role/myRole'
-  read:
-    - 'arn:aws:ssm:us-east-1:123456789012:parameter/myparameter'
-  write:
-    - 'arn:aws:ssm:us-east-1:123456789012:parameter/myparameter'
-  list:
-    - 'arn:aws:ssm:us-east-1:123456789012:parameter/myparameter'
-  tagging:
-    - 'arn:aws:secretsmanager:us-east-1:123456789012:secret:mysecret'
-  permissions-management:
-    - 'arn:aws:secretsmanager:us-east-1:123456789012:secret:mysecret'
+mode: crud
+name: myRole
+read:
+- 'arn:aws:ssm:us-east-1:123456789012:parameter/myparameter'
+write:
+- 'arn:aws:ssm:us-east-1:123456789012:parameter/myparameter'
+list:
+- 'arn:aws:ssm:us-east-1:123456789012:parameter/myparameter'
+tagging:
+- 'arn:aws:secretsmanager:us-east-1:123456789012:secret:mysecret'
+permissions-management:
+- 'arn:aws:secretsmanager:us-east-1:123456789012:secret:mysecret'
 ```
 
 Then run this command:
 
 ```bash
-policy_sentry write-policy --crud --input-file crud.yml
+policy_sentry write-policy --input-file crud.yml
 ```
 
 It will generate these results:
@@ -224,7 +226,6 @@ This rapidly speeds up the time to develop IAM policies, and ensures that all po
 
 ## Quickstart
 
-
 #### Installation
 
 * Policy Sentry is available via pip. To install, run:
@@ -247,28 +248,9 @@ To enable ZSH completion, put this in your `.zshrc`:
 eval "$(_POLICY_SENTRY_COMPLETE=source_zsh policy_sentry)"
 ```
 
-
-### Initialization
-
-```bash
-# Initialize the policy_sentry config folder and create the IAM database tables.
-policy_sentry initialize
-
-# Fetch the most recent version of the AWS documentation so you can experiment with new services.
-policy_sentry initialize --fetch
-
-# Override the Access Levels by specifying your own Access Levels (example:, correcting Permissions management levels)
-policy_sentry initialize --access-level-overrides-file ~/.policy_sentry/overrides-resource-policies.yml
-
-policy_sentry initialize --access-level-overrides-file ~/.policy_sentry/access-level-overrides.yml
-```
-
 ### Policy Writing cheat sheet
 
 ```bash
-# Initialize the policy_sentry config folder and create the IAM database tables.
-policy_sentry initialize
-
 # Create templates first!!! This way you can just paste the values you need rather than remembering the YAML format
 # CRUD mode
 policy_sentry create-template --name myRole --output-file tmp.yml --template-type crud
@@ -276,10 +258,10 @@ policy_sentry create-template --name myRole --output-file tmp.yml --template-typ
 policy_sentry create-template --name myRole --output-file tmp.yml --template-type actions
 
 # Write policy based on resource-specific access levels
-policy_sentry write-policy --crud --input-file examples/yml/crud.yml
+policy_sentry write-policy --input-file examples/yml/crud.yml
 
 # Write policy_sentry YML files based on resource-specific access levels on a directory basis
-policy_sentry write-policy-dir --crud --input-dir examples/input-dir --output-dir examples/output-dir
+policy_sentry write-policy-dir --input-dir examples/input-dir --output-dir examples/output-dir
 
 # Write policy based on a list of actions
 policy_sentry write-policy --input-file examples/yml/actions.yml
@@ -339,48 +321,24 @@ policy_sentry query condition-table --service cloud9
 policy_sentry query condition-table --service cloud9 --name cloud9:Permissions
 ```
 
-
-### Policy Analysis Cheat Sheet
+### Local Initialization (Optional)
 
 ```bash
 # Initialize the policy_sentry config folder and create the IAM database tables.
 policy_sentry initialize
 
-# Initialize the database, but instead of using the AWS HTML files in the Python package, download the very latest AWS HTML Docs and make sure that Policy Sentry uses them
+# Fetch the most recent version of the AWS documentation so you can experiment with new services.
 policy_sentry initialize --fetch
 
-# Analyze a single IAM policy FILE
-policy_sentry analyze policy-file --policy examples/explicit-actions.json
+# Override the Access Levels by specifying your own Access Levels (example:, correcting Permissions management levels)
+policy_sentry initialize --access-level-overrides-file ~/.policy_sentry/overrides-resource-policies.yml
 
-# Download customer managed IAM policies from a live account under 'default' profile. By default, it looks for policies that are 1. in use and 2. customer managed
-policy_sentry download-policies # this will download to ~/.policy_sentry/accountid/customer-managed/.json
-
-# Download customer-managed IAM policies, including those that are not attached
-policy_sentry download-policies --include-unattached # this will download to ~/.policy_sentry/accountid/customer-managed/.json
-
-# 1. Use a tool like Gossamer (https://github.com/GESkunkworks/gossamer) to update your AWS credentials profile all at once
-# 2. Recursively download all IAM policies from accounts in your credentials file
-policy_sentry download-policies --recursive
-
-# Audit all IAM policies downloaded locally and generate CSV and JSON reports.
-policy_sentry analyze downloaded-policies
-
-# Audit all IAM policies and also include a Markdown formatted report, then convert it to HTML
-policy_sentry analyze downloaded-policies --include-markdown-report
-pandoc -f markdown ~/.policy_sentry/analysis/overall.md -t html > overall.html
-
-# Use a custom report configuration. This is typically used for excluding role names. Defaults to ~/.policy_sentry/report-config.yml
-policy_sentry analyze downloaded-policies --report-config custom-config.yml
-
-# Analyze a specific policy file
-policy_sentry analyze policy-file --policy examples/analyze/explicit-actions.json
+policy_sentry initialize --access-level-overrides-file ~/.policy_sentry/access-level-overrides.yml
 ```
 
+## Usage
 
-## Commands
-
-### Usage
-* `initialize`: Create a SQLite database that contains all of the services available through the [Actions, Resources, and Condition Keys documentation][1]. See the [documentation][12].
+### Commands
 
 * `create-template`: Creates the YML file templates for use in the `write-policy` command types.
 
@@ -388,26 +346,16 @@ policy_sentry analyze policy-file --policy examples/analyze/explicit-actions.jso
   - Option 1: Specify CRUD levels (Read, Write, List, Tagging, or Permissions management) and the ARN of the resource. It will write this for you. See the [documentation][13]
   - Option 2: Specify a list of actions. It will write the IAM Policy for you, but you will have to fill in the ARNs. See the [documentation][14].
 
-* `write-policy-dir`: This can be helpful in the Terraform use case. For more information, see the [documentation][15].
+* `write-policy-dir`: This can be helpful in writing batches of JSON Policy files at the same time. For more information, see the [documentation][15].
 
 * `query`: Query the IAM database tables. This can help when filling out the Policy Sentry templates, or just querying the database for quick knowledge.
   - Option 1: Query the Actions Table (`action-table`)
   - Option 2: Query the ARNs Table (`arn-table`)
   - Option 3: Query the Conditions Table (`condition-table`)
 
-* `download-policies`: Download IAM policies from your AWS account for analysis.
+* `initialize`: (Optional). Create a SQLite database that contains all of the services available through the [Actions, Resources, and Condition Keys documentation][1]. See the [documentation][12].
 
-* `analyze`: Analyze IAM policies downloaded locally, expands the wildcards (like ``s3:List*``) if necessary, and generates a report based on policies that are flagged for these risk categories:
-
-  - Privilege Escalation: This is based off of [Rhino Security Labs research](https://github.com/RhinoSecurityLabs/AWS-IAM-Privilege-Escalation).
-
-  - Resource Exposure: This contains all IAM Actions at the "Permissions Management" resource level. Essentially - if your policy can (1) write IAM Trust Policies, (2) write to the RAM service, or (3) write Resource-based Policies, then the action has the potential to result in resource exposure if an IAM principal with that policy was compromised.
-
-  - Network Exposure: This highlights IAM actions that indicate an IAM principal possessing these actions could create resources that could be exposed to the public at the network level. For example, public RDS clusters, public EC2 instances. While possession of these privileges does not constitute a security vulnerability, it is important to know exactly who has these permissions.
-
-  - Credentials Exposure: This includes IAM actions that grant some kind of credential, where if exposed, it could grant access to sensitive information. For example, `ecr:GetAuthorizationToken` creates a token that is valid for 12 hours, which you can use to authenticate to Elastic Container Registries and download Docker images that are private to the account.
-
-### Library usage
+### Python Library usage
 
 When using Policy Sentry manually, you have to build a local database file with the `policy_sentry initialize` command.
 
@@ -473,19 +421,61 @@ The `write-policy` command also supports passing in the YML config via STDIN. If
 
 ```bash
 # Write policies by passing in the config via STDIN
-cat examples/yml/crud.yml | docker run -i --rm kmcquade/policy_sentry:latest "write-policy --crud"
+cat examples/yml/crud.yml | docker run -i --rm kmcquade/policy_sentry:latest "write-policy"
 
 cat examples/yml/actions.yml | docker run -i --rm kmcquade/policy_sentry:latest "write-policy"
 ```
 
-### Updating the AWS HTML files
+### Terraform
 
-This will update the HTML files stored in `policy_sentry/shared/data/docs/list_*.partial.html`:
+The Terraform module is published and maintained [here](https://github.com/kmcquade/terraform-aws-policy-sentry).
 
-```bash
-pipenv shell
-python3 ./utils/download_docs.py
+* Prerequisites:
+  - Install Policy Sentry (v0.7.2 or higher)
+  - Install Terraform (v0.12.8 or higher)
+
+* Create the `main.tf` in your directory with the following contents:
+
+```hcl
+module "policy_sentry_demo" {
+  source                              = "github.com/kmcquade/terraform-aws-policy-sentry"
+  name                                = var.name
+  read_access_level                   = var.read_access_level
+  write_access_level                  = var.write_access_level
+  list_access_level                   = var.list_access_level
+  tagging_access_level                = var.tagging_access_level
+  permissions_management_access_level = var.permissions_management_access_level
+  wildcard_only_actions               = var.wildcard_only_actions
+  minimize                            = var.minimize
+}
 ```
+
+* Copy and paste the contents of the `variables.tf` file [here](https://github.com/kmcquade/terraform-aws-policy-sentry/blob/master/examples/demo/variables.tf) into your directory.
+
+* Create a `terraform.tfvars` file in your directory with the following contents:
+
+terraform.tfvars:
+```hcl
+name = "PolicySentryTest"
+
+list_access_level = [
+  "arn:aws:s3:::example-org",
+]
+
+read_access_level = [
+  "arn:aws:kms:us-east-1:123456789012:key/shaq"
+]
+
+write_access_level = [
+  "arn:aws:kms:us-east-1:123456789012:key/shaq"
+]
+```
+
+* Run `terraform apply` once to create the JSON policy file.
+
+* Run `terraform apply` **again** (from the same directory) to create the IAM policy.
+
+For the full example, including GIFs depicting real output, see the README for the Terraform module [here](https://github.com/kmcquade/terraform-aws-policy-sentry).
 
 ## References
 

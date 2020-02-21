@@ -1,10 +1,44 @@
 # Changelog
-# 0.6.11 (2020-01-28)
+## Future release (Unreleased)
+* Add conditions support
+
+## 0.7.1
+* **Breaking change** and **new**: Template is modified again. This allows easy additions of wildcard-only actions with access levels specific to services (such as "S3 actions at read access level that do not support resource constraints"), so you never have to look at individual IAM actions again.
+* **New**: Output will be in UpperCamelCase rather than all lowercase, for human readability. Note that if `--minimize` is specified for `write-policy`, it will give me lowercase. Otherwise, it will be UpperCamelCase. Fixes #124.
+* **New**: Terraform module - #112
+* Small bugs - #126
+
+## 0.7.0.2 (2020-02-10)
+* Ignore empty entries in the yaml template
+
+## 0.7.0.1 (2020-02-07)
+* Quick fix for @jlongman's issue - #118
+* Fix the overly verbose logs for #119
+
+## 0.7.0 (2020-02-06)
+User-facing changes:
+* The `initialize` command is now completely optional.
+* **Removed**: The `analyze` command is deprecated and removed. We moved this functionality over to Parliament [here](https://github.com/duo-labs/parliament/pull/66)
+* **Removed**: The `download-policies` command is deprecated and removed.
+* **Breaking change**: Template format is vastly different. You will have to either pin to an old version or update your templates.
+* Now users do not have to specify the `--crud` flag - Policy Sentry will automatically detect the format.
+* **Removed**: `analyze` and `download-policies` commands.
+
+Developer library changes:
+* A **lot**. Removed a lot of the old functions.
+* Replaced `ArnActionGroup` with `SidGroup`. This will allow us to do conditions, etc. It is also easier to read.
+* The old `write-policy` logic using `ArnActionGroup` is nuked. Now using `SidGroup`, since that will help us take advantage of condition keys. And it's clean(er).
+* `write-policy` is easier to call as a method.
+* Unit tests are in a nested folder structure that resembles the rest of the python package.
+* Moved to Python Black instead of autopep8
+* Replaced a lot of print statements with logging.
+
+## 0.6.11 (2020-01-28)
 ### Changed
 * Now you can skip the long wait under the `initialize` command - the initialize command finishes instantly. To rebuild the database, run `initialize --build`, or to build it with the latest AWS docs, use `initialize --fetch`. Fixes #101
 * Documentation updates. Fixes #102
 
-# 0.6.10 (2020-01-24)
+## 0.6.10 (2020-01-24)
 ### Changed
 * writing: In the last version, if you specified "tagging" in your YML file, the write-policy command was ignoring it. This fixes that. #100
 

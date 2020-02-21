@@ -1,3 +1,4 @@
+# pylint: disable=W1202,E1305
 """
 Functions for Minimizing statements, heavily borrowed from policyuniverse.
 https://github.com/Netflix-Skunkworks/policyuniverse/
@@ -20,12 +21,17 @@ Q: How many policies can I attach to an IAM role?
 * For managed policies: You can add up to 10 managed policies to a user, role, or group.
 * The size of each managed policy cannot exceed 6,144 characters.
 """
+import logging
 from policyuniverse.expander_minimizer import _get_prefixes_for_action
+
+logger = logging.getLogger(__name__)
 
 
 # Adapted version of policyuniverse's _get_denied_prefixes_from_desired, here:
 # https://github.com/Netflix-Skunkworks/policyuniverse/blob/master/policyuniverse/expander_minimizer.py#L101
-def get_denied_prefixes_from_desired(desired_actions, all_actions):  # pylint: disable=missing-function-docstring
+def get_denied_prefixes_from_desired(
+    desired_actions, all_actions
+):  # pylint: disable=missing-function-docstring
     """
     Adapted version of policyuniverse's _get_denied_prefixes_from_desired, here: https://github.com/Netflix-Skunkworks/policyuniverse/blob/master/policyuniverse/expander_minimizer.py#L101
     """
@@ -40,7 +46,9 @@ def get_denied_prefixes_from_desired(desired_actions, all_actions):  # pylint: d
 
 # Adapted version of policyuniverse's _check_permission_length. We are commenting out the skipping prefix message
 # https://github.com/Netflix-Skunkworks/policyuniverse/blob/master/policyuniverse/expander_minimizer.py#L111
-def check_min_permission_length(permission, minchars=None):  # pylint: disable=missing-function-docstring
+def check_min_permission_length(
+    permission, minchars=None
+):  # pylint: disable=missing-function-docstring
     """
     Adapted version of policyuniverse's _check_permission_length. We are commenting out the skipping prefix message
     https://github.com/Netflix-Skunkworks/policyuniverse/blob/master/policyuniverse/expander_minimizer.py#L111
@@ -58,14 +66,16 @@ def check_min_permission_length(permission, minchars=None):  # pylint: disable=m
 
 # This is a condensed version of policyuniverse's minimize_statement_actions, changed for our purposes.
 # https://github.com/Netflix-Skunkworks/policyuniverse/blob/master/policyuniverse/expander_minimizer.py#L123
-def minimize_statement_actions(desired_actions, all_actions, minchars=None):  # pylint: disable=missing-function-docstring
+def minimize_statement_actions(
+    desired_actions, all_actions, minchars=None
+):  # pylint: disable=missing-function-docstring
     """
     This is a condensed version of policyuniverse's minimize_statement_actions, changed for our purposes.
     https://github.com/Netflix-Skunkworks/policyuniverse/blob/master/policyuniverse/expander_minimizer.py#L123
     """
+    desired_actions = [x.lower() for x in desired_actions]
     minimized_actions = set()
-    denied_prefixes = get_denied_prefixes_from_desired(
-        desired_actions, all_actions)
+    denied_prefixes = get_denied_prefixes_from_desired(desired_actions, all_actions)
     for action in desired_actions:
         if action in denied_prefixes:
             # print("Action is a denied prefix. Action: {}".format(action))
@@ -80,7 +90,7 @@ def minimize_statement_actions(desired_actions, all_actions, minchars=None):  # 
                 continue
             # If the action name is not empty
             if prefix not in denied_prefixes:
-                if permission != '':
+                if permission != "":
                     if prefix not in desired_actions:
                         prefix = "{}*".format(prefix)
                     minimized_actions.add(prefix)
@@ -88,8 +98,9 @@ def minimize_statement_actions(desired_actions, all_actions, minchars=None):  # 
                     break
 
         if not found_prefix:
-            print("Could not suitable prefix. Defaulting to {}".format(
-                prefixes[-1]))
+            logger.debug(
+                "Could not suitable prefix. Defaulting to %s".format(prefixes[-1])
+            )
             minimized_actions.add(prefixes[-1])
     # sort the actions
     minimized_actions_list = sorted(minimized_actions)

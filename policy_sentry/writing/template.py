@@ -3,69 +3,64 @@ These can be used for generating policies
 """
 from jinja2 import Template
 
-ACTIONS_TEMPLATE = '''# Generate my policy when I know the Actions
-policy_with_actions:
-- name: {{ name }}
-  description: '' # For human auditability
-  role_arn: '' # For human auditability
-  actions:
-  - ''
-'''
+ACTIONS_TEMPLATE = """mode: actions
+name: {{ name }}
+actions:
+- ''
+"""
 
-CRUD_TEMPLATE = '''# Generate my policy when I know the access levels and ARNs
-policy_with_crud_levels:
-- name: {{ name }}
-  description: '' # For human auditability
-  role_arn: '' # For human auditability
-  # Insert ARNs under each access level below
-  # If you do not need to use certain access levels, delete them.
-  read:
-    - ''
-  write:
-    - ''
-  list:
-    - ''
-  tagging:
-    - ''
-  permissions-management:
-    - ''
-  # If the policy needs to use IAM actions that cannot be restricted to ARNs,
-  # like ssm:DescribeParameters, specify those actions here.
-  wildcard:
-    - ''
-  # The following are examples of universal Lazy conditions
-  lazy-conditions:
-    - condition_key_string: 'aws:SecureTransport'
-      condition_type_string: 'Bool'
-      condition_value: 'True'
-'''
+CRUD_TEMPLATE = """mode: crud
+name: {{ name }}
+# Specify resource ARNs
+read:
+- ''
+write:
+- ''
+list:
+- ''
+tagging:
+- ''
+permissions-management:
+- ''
+# Actions that do not support resource constraints
+wildcard-only:
+  single-actions: # standalone actions
+  - ''
+  # Service-wide - like 's3' or 'ec2'
+  service-read:
+  - ''
+  service-write:
+  - ''
+  service-list:
+  - ''
+  service-tagging:
+  - ''
+  service-permissions-management:
+  - ''
+"""
 
 CRUD_TEMPLATE_DICT = {
-    'policy_with_crud_levels': [
-        {
-            'name': '',
-            'description': '',
-            'role_arn': '',
-            'read': [],
-            'write': [],
-            'list': [],
-            'tagging': [],
-            'permissions-management': [],
-            'wildcard': [],
-            'lazy-conditions': []
-        }
-    ]
+    "mode": "crud",
+    "name": "",
+    "read": [],
+    "write": [],
+    "list": [],
+    "tagging": [],
+    "permissions-management": [],
+    "wildcard-only": {
+        "single-actions": [],
+        "service-read": [],
+        "service-write": [],
+        "service-list": [],
+        "service-tagging": [],
+        "service-permissions-management": [],
+    },
 }
 
 ACTIONS_TEMPLATE_DICT = {
-    'policy_with_actions': [
-        {
-            'name': '',
-            'description': '',
-            'role_arn': '',
-            'actions': [],
-        }
-    ]
+    "mode": "actions",
+    "name": "",
+    "actions": [],
 }
 
 
