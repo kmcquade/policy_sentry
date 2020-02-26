@@ -5,6 +5,7 @@ This supports the policy_sentry query functionality
 from sqlalchemy import and_
 from policy_sentry.shared.database import ConditionTable, ActionTable, ArnTable
 from policy_sentry.util.conditions import translate_condition_key_data_types
+from parliament.statement import GLOBAL_CONDITION_KEYS, OPERATORS, get_global_key_type
 
 
 # Per service
@@ -25,6 +26,26 @@ def get_condition_keys_for_service(db_session, service):
     for row in rows:
         results.append(str(row.condition_key_name))
     return results
+
+
+def get_condition_keys_for_service_as_map(db_session, service):
+    """
+    Same as get_condition_keys_for_service, but instead of giving them as a list, give it as a map - with the key being the condition key, and the value being the data type (bool, string, etc.)
+
+    :param db_session: SQLAlchemy database session object
+    :param service: An AWS service prefix, like `s3` or `kms`
+    :return:
+    """
+    service_specific_condition_keys = {}
+    rows = db_session.query(
+        ConditionTable.condition_key_name,
+        ConditionTable.condition_value_type,
+        ConditionTable.description,
+    ).filter(ConditionTable.service.like(service))
+    for row in rows:
+        service_specific_condition_keys[str(row.condition_key_name)] = str(row.condition_value_type).capitalize()
+    service_specific_condition_keys.update(GLOBAL_CONDITION_KEYS)
+    return service_specific_condition_keys
 
 
 # Per condition key name

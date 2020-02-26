@@ -6,6 +6,7 @@ from policy_sentry.querying.conditions import (
     get_condition_keys_for_service,
     get_conditions_for_action_and_raw_arn,
     get_condition_value_type,
+    get_condition_keys_for_service_as_map
 )
 
 db_session = connect_db(DATABASE_FILE_PATH)
@@ -24,6 +25,43 @@ class QueryConditionsTestCase(unittest.TestCase):
         ]
         output = get_condition_keys_for_service(db_session, "cloud9")
         self.assertEqual(desired_output, output)
+
+    def test_get_condition_keys_for_service_as_map(self):
+        """querying.conditions.get_condition_keys_for_service_as_map"""
+        desired_output = {
+            'cloud9:EnvironmentId': 'String',
+            'cloud9:EnvironmentName': 'String',
+            'cloud9:InstanceType': 'String',
+            'cloud9:Permissions': 'String',
+            'cloud9:SubnetId': 'String',
+            'cloud9:UserArn': 'Arn',
+            'aws:CurrentTime': 'Date',
+            'aws:EpochTime': 'Date',
+            'aws:MultiFactorAuthAge': 'Numeric',
+            'aws:MultiFactorAuthPresent': 'Bool',
+            'aws:PrincipalOrgID': 'String',
+            'aws:PrincipalArn': 'Arn',
+            'aws:RequestedRegion': 'String',
+            'aws:SecureTransport': 'Bool',
+            'aws:UserAgent': 'String',
+            'aws:PrincipalTag/*': 'String',
+            'aws:PrincipalType': 'String',
+            'aws:Referer': 'String',
+            'aws:RequestTag/*': 'String',
+            'aws:ResourceTag/*': 'String',
+            'aws:SourceAccount': 'String',
+            'aws:SourceArn': 'Arn',
+            'aws:SourceIp': 'Ip',
+            'aws:SourceVpc': 'String',
+            'aws:SourceVpce': 'String',
+            'aws:TagKeys': 'String',
+            'aws:TokenIssueTime': 'Date',
+            'aws:userid': 'String',
+            'aws:username': 'String',
+            'aws:VpcSourceIp': 'Ip'
+        }
+        output = get_condition_keys_for_service_as_map(db_session, "cloud9")
+        self.assertDictEqual(output, desired_output)
 
     def test_get_condition_key_details(self):
         """querying.conditions.get_condition_key_details"""
