@@ -37,12 +37,13 @@ setuptools.setup(
         'pandas',
         'policyuniverse',
         'PyYAML',
-        'bs4',
+        'beautifulsoup4',
         'html5lib',
         'lxml',
         'jinja2',
         'requests',
         'schema',
+        'click_log'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
