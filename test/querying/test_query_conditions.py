@@ -38,6 +38,9 @@ class QueryConditionsTestCase(unittest.TestCase):
             'cloud9:Permissions': 'String',
             'cloud9:SubnetId': 'String',
             'cloud9:UserArn': 'Arn',
+            'aws:CalledVia': 'String',
+            'aws:CalledViaFirst': 'String',
+            'aws:CalledViaLast': 'String',
             'aws:CurrentTime': 'Date',
             'aws:EpochTime': 'Date',
             'aws:MultiFactorAuthAge': 'Numeric',
@@ -50,8 +53,10 @@ class QueryConditionsTestCase(unittest.TestCase):
             'aws:PrincipalTag/*': 'String',
             'aws:PrincipalType': 'String',
             'aws:Referer': 'String',
+            'aws:RequestTag/${TagKey}': 'String',
             'aws:RequestTag/*': 'String',
             'aws:ResourceTag/*': 'String',
+            'aws:ResourceTag/${TagKey}': 'String',
             'aws:SourceAccount': 'String',
             'aws:SourceArn': 'Arn',
             'aws:SourceIp': 'Ip',
@@ -64,7 +69,9 @@ class QueryConditionsTestCase(unittest.TestCase):
             'aws:VpcSourceIp': 'Ip'
         }
         output = get_condition_keys_for_service_as_map(db_session, "cloud9")
-        self.assertDictEqual(output, desired_output)
+        print(output)
+        self.maxDiff = None
+        self.assertDictEqual(desired_output, output)
 
     def test_get_condition_key_details(self):
         """querying.conditions.get_condition_key_details"""
