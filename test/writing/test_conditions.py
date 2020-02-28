@@ -3,7 +3,7 @@ import json
 from policy_sentry.shared.database import connect_db
 from policy_sentry.shared.constants import DATABASE_FILE_PATH
 from policy_sentry.writing.conditions import is_valid_operator, check_mismatched_global_condition_type, \
-    is_mismatched_type_set_to_null, check_bad_pattern_for_mfa
+    is_mismatched_type_set_to_null, check_bad_pattern_for_mfa, check_mismatched_service_condition_type
 from parliament.misc import make_list
 
 db_session = connect_db(DATABASE_FILE_PATH)
@@ -171,7 +171,7 @@ class ConditionsTestCase(unittest.TestCase):
         condition_block = {"s3:prefix": ["home/${aws:username}/*"]}
         operator_type_requirement = "String"
         operator = "StringLike"
-        result = check_mismatched_global_condition_type(key, condition_block, operator_type_requirement, operator, expanded_s3_actions)
+        result = check_mismatched_service_condition_type(key, condition_block, operator_type_requirement, operator, expanded_s3_actions)
         self.assertIsNone(result)
 
         # # CASE 3: FAILING CASE
@@ -180,5 +180,8 @@ class ConditionsTestCase(unittest.TestCase):
         operator_type_requirement = "Date"  # This will cause it to fail
         operator = "StringLike"
         with self.assertRaises(Exception):
-            result = check_mismatched_global_condition_type(key, condition_block, operator_type_requirement, operator, expanded_s3_actions)
+            result = check_mismatched_service_condition_type(key, condition_block, operator_type_requirement, operator, expanded_s3_actions)
+
+    def test_check_action_condition_not_found(self):
+        """writing.conditions.check_action_condition_not_found"""
 

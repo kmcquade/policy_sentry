@@ -228,22 +228,7 @@ class SidGroup:
                             "access_level": row["access_level"],
                             "action": row["action"],
                         }
-                        # [row["resource_arn_format"], row["access_level"], row["action"]])
                     )
-
-        # arns_matching_supplied_actions = [{
-        #         "resource_arn_format": "*",
-        #         "access_level": "Write",
-        #         "action": "kms:createcustomkeystore"
-        #     },{
-        #         "resource_arn_format": "arn:${Partition}:kms:${Region}:${Account}:key/${KeyId}",
-        #         "access_level": "Permissions management",
-        #         "action": "kms:creategrant"
-        #     },{
-        #         "resource_arn_format": "*",
-        #         "access_level": "Permissions management",
-        #         "action": "kms:creategrant"
-        # }]
 
         # Identify the actions that do not support resource constraints
         # If that's the case, add it to the wildcard namespace. Otherwise, don't add it.

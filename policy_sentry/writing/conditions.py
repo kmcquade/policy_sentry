@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def validate_condition_map_item(operator, condition_block, expanded_actions):
+def validate_condition_map(operator, condition_block, expanded_actions):
     """
     operator is something like "StringLike"
     condition_block is something like {"s3:prefix":["home/${aws:username}/*"]}
