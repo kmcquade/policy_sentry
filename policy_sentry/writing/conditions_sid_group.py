@@ -141,18 +141,6 @@ class ConditionSidGroup:
                 "Mult",  # TODO: Figure out if I need to restrict it more? Resource_type_name maybe?
                 condition_block
             )
-            condition_key_namespace = re.sub(
-                "[^A-Za-z0-9]+", "", condition_block["condition_key_string"]
-            )
-            condition_type_namespace = condition_block["condition_type_string"]
-            condition_value_namespace = re.sub(
-                "[^A-Za-z0-9]+", "", condition_block["condition_value"]
-            )
-            condition_namespace = (
-                f"{capitalize_first_character(condition_key_namespace)}"
-                f"{capitalize_first_character(condition_type_namespace)}"
-                f"{capitalize_first_character(condition_value_namespace)}"
-            )
             condition_dict = {
                 condition_block["condition_type_string"]: {condition_block["condition_key_string"]: condition_block["condition_value"]}
             }

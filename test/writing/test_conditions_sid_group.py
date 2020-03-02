@@ -13,7 +13,7 @@ class ConditionsTestCase(unittest.TestCase):
         """writing.conditions_sid_group.ConditionSidGroup"""
         condition_sid_group = ConditionSidGroup()
         arn_list = [
-            "arn:${Partition}:ssm:${Region}:${Account}:resource-data-sync/${SyncName}"
+            "arn:${Partition}:ssm:${Region}:${Account}:resource-data-sync/*"
         ]
         access_level = "Write"
         # conditions_block = {"StringLike": {"ssm:SyncType": "SyncToDestination"}}
@@ -32,7 +32,7 @@ class ConditionsTestCase(unittest.TestCase):
         expected_result = {
             "SsmWriteMultSsmsynctypeStringlikeSyncfromsource": {
                 "arn": [
-                    "arn:${Partition}:ssm:${Region}:${Account}:resource-data-sync/${SyncName}"
+                    "arn:${Partition}:ssm:${Region}:${Account}:resource-data-sync/*"
                 ],
                 "service": "ssm",
                 "access_level": "Write",
@@ -49,7 +49,7 @@ class ConditionsTestCase(unittest.TestCase):
                 }
             }
         }
-
+        self.maxDiff = None
         self.assertDictEqual(expected_result, result)
 
         policy = condition_sid_group.get_rendered_policy(db_session)
