@@ -105,7 +105,9 @@ def get_conditions_for_action_and_raw_arn(db_session, action, raw_arn):
             )
         )
     result = rows.first()
-    if result.condition_keys is None:
+    if not result:
+        return False
+    elif result.condition_keys is None:
         return False
     else:
         condition_keys_list = result.condition_keys.split(",")

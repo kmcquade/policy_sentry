@@ -182,6 +182,6 @@ class ConditionsTestCase(unittest.TestCase):
         with self.assertRaises(Exception):
             result = check_mismatched_service_condition_type(key, condition_block, operator_type_requirement, operator, expanded_s3_actions)
 
-    def test_check_action_condition_not_found(self):
-        """writing.conditions.check_action_condition_not_found"""
+    # def test_check_action_condition_not_found(self):
+    #     """writing.conditions.check_action_condition_not_found"""
 
