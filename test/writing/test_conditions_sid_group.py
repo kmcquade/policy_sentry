@@ -3,6 +3,8 @@ import json
 from policy_sentry.shared.database import connect_db
 from policy_sentry.shared.constants import DATABASE_FILE_PATH
 from policy_sentry.writing.conditions_sid_group import ConditionSidGroup
+from parliament import analyze_policy_string
+
 db_session = connect_db(DATABASE_FILE_PATH)
 
 
@@ -41,13 +43,40 @@ class ConditionsTestCase(unittest.TestCase):
                     "ssm:UpdateResourceDataSync"
                 ],
                 "conditions": {
-                    "SsmsynctypeStringlikeSyncfromsource": {
-                        "StringLike": {
-                            "ssm:SyncType": "SyncFromSource"
-                        }
+                    "StringLike": {
+                        "ssm:SyncType": "SyncFromSource"
                     }
                 }
             }
         }
 
         self.assertDictEqual(expected_result, result)
+
+        policy = condition_sid_group.get_rendered_policy(db_session)
+        print(json.dumps(policy, indent=4))
+        expected_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "SsmWriteMultSsmsynctypeStringlikeSyncfromsource",
+                    "Effect": "Allow",
+                    "Action": [
+                        "ssm:CreateResourceDataSync",
+                        "ssm:DeleteResourceDataSync",
+                        "ssm:UpdateResourceDataSync"
+                    ],
+                    "Resource": "*",
+                    "Condition": {
+                        "StringLike": {
+                            "ssm:SyncType": "SyncFromSource"
+                        }
+                    }
+                }
+            ]
+        }
+        self.assertDictEqual(policy, expected_policy)
+
+        policy_string = json.dumps(policy)
+        analyzed_policy = analyze_policy_string(policy_string)
+        for f in analyzed_policy.findings:
+            print(f)

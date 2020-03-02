@@ -8,6 +8,9 @@ from policy_sentry.querying.conditions import get_conditions_for_action_and_raw_
 from policy_sentry.writing.sid_group import create_policy_sid_namespace
 from policy_sentry.util.text import capitalize_first_character
 import re
+import logging
+logger = logging.getLogger(__name__)
+
 
 class ConditionSidGroup:
     """
@@ -63,7 +66,7 @@ class ConditionSidGroup:
         # render the policy
         for sid in self.sids:
             actions = self.sids[sid]["actions"]
-            conditions_block = self.sids[sid]["conditions_block"]
+            conditions_block = self.sids[sid]["conditions"]
             if len(actions) == 0:
                 continue
             if minimize is not None and isinstance(minimize, int):
@@ -76,7 +79,7 @@ class ConditionSidGroup:
                     "Effect": "Allow",
                     "Action": actions,
                     "Resource": "*",
-                    "Conditions": conditions_block,
+                    "Condition": conditions_block,
                 }
             )
         policy = {"Version": POLICY_LANGUAGE_VERSION, "Statement": statements}
@@ -160,11 +163,27 @@ class ConditionSidGroup:
                 "access_level": access_level,
                 "arn_format": "*",
                 "actions": actions_corresponding_to_condition,
-                "conditions": {condition_namespace: condition_dict},
+                "conditions": condition_dict,
             }
+            # TODO: In the rendered policy, you should account for instances where StringLike might be used twice or something.
             if sid_namespace in self.sids:
-                if condition_namespace not in self.sids[sid_namespace]["conditions"]:
-                    self.sids[sid_namespace]["conditions"][condition_namespace] = condition_dict
+                logger.debug(f"sid_namespace {sid_namespace} is in self.sids")
+                # If StringLike is already in there, see if ssm:SyncType is under StringLike
+                if condition_block["condition_type_string"] in self.sids[sid_namespace]["conditions"]:
+                    # If ["StringLike"]["ssm:SyncType"] exists, then see if "SyncFromSource" is a value under that
+                    if condition_block["condition_key_string"] in self.sids[sid_namespace]["conditions"][condition_block["condition_type_string"]]:
+                        if condition_block["condition_value"] not in self.sids[sid_namespace]["conditions"][condition_block["condition_type_string"]][condition_block["condition_key_string"]]:
+                            # TODO: Let's not deal with lists for now
+                            if isinstance(self.sids[sid_namespace]["conditions"][condition_block["condition_type_string"]][condition_block["condition_key_string"]], str):
+                                self.sids[sid_namespace]["conditions"][condition_block["condition_type_string"]][
+                                    condition_block["condition_key_string"]] = condition_block["condition_value"]
+                    else:
+                        self.sids[sid_namespace]["conditions"][condition_block["condition_type_string"]] = {condition_block["condition_key_string"]: condition_block["condition_value"]}
+                elif condition_block["condition_type_string"] not in self.sids[sid_namespace]["conditions"]:
+                    self.sids[sid_namespace]["conditions"][condition_block["condition_type_string"]] = {condition_block["condition_key_string"]: condition_block["condition_value"]}
+                # if condition_namespace not in self.sids[sid_namespace]["conditions"]:
+                #     logger.debug(f"sid_namespace {sid_namespace} is in self.sids")
+                #     self.sids[sid_namespace]["conditions"][condition_namespace] = condition_dict
             if sid_namespace not in self.sids:
                 self.sids[sid_namespace] = temp_sid_dict
 
