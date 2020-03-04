@@ -52,6 +52,27 @@ ACTIONS_SCHEMA = Schema(
     {"mode": "actions", Optional("name"): And(Use(str)), "actions": And([str]),}
 )
 
+CONDITIONS_SCHEMA = Schema(
+    {
+        "mode": "conditions",
+        Optional("name"): And(Use(str)),
+        Optional("read"): [str],
+        Optional("write"): [str],
+        Optional("list"): [str],
+        Optional("permissions-management"): [str],
+        Optional("tagging"): [str],
+        "lazy-conditions": [object],
+        Optional("wildcard-only"): {
+            Optional("single-actions"): [str],
+            Optional("service-read"): [str],
+            Optional("service-write"): [str],
+            Optional("service-list"): [str],
+            Optional("service-tagging"): [str],
+            Optional("service-permissions-management"): [str],
+        },
+    }
+)
+
 
 def check_actions_schema(cfg):
     """
@@ -78,6 +99,21 @@ def check_crud_schema(cfg):
     else:
         raise Exception(
             f"The provided template does not match the required schema for CRUD mode. "
+            f"Please use the create-template command to generate a valid YML template that "
+            f"Policy Sentry will accept."
+        )
+
+
+def check_conditions_schema(cfg):
+    """
+    Determines whether the user-provided config matches the required schema for Conditions mode
+    """
+    result = check(CONDITIONS_SCHEMA, cfg)
+    if result is True:
+        return result
+    else:
+        raise Exception(
+            f"The provided template does not match the required schema for Conditions mode. "
             f"Please use the create-template command to generate a valid YML template that "
             f"Policy Sentry will accept."
         )

@@ -8,9 +8,11 @@ import yaml
 import click
 import click_log
 from policy_sentry.shared.constants import DATABASE_FILE_PATH
+from policy_sentry.writing.conditions_sid_group import ConditionSidGroup
 from policy_sentry.shared.database import connect_db
 from policy_sentry.util.file import read_yaml_file
 from policy_sentry.writing.sid_group import SidGroup
+from policy_sentry.writing.validate import check_actions_schema, check_crud_schema, check_conditions_schema
 logger = logging.getLogger()
 click_log.basic_config(logger)
 
@@ -48,8 +50,17 @@ def write_policy(input_file, minimize):
         except yaml.YAMLError as exc:
             logger.critical(exc)
             sys.exit()
-    policy = write_policy_with_template(db_session, cfg, minimize)
-    print(json.dumps(policy, indent=4))
+    if "mode" in cfg.keys():
+        if cfg["mode"] == "crud":
+            check_crud_schema(cfg)
+            policy = write_policy_with_template(db_session, cfg, minimize)
+        elif cfg["mode"] == "actions":
+            check_actions_schema(cfg)
+            policy = write_policy_with_template(db_session, cfg, minimize)
+        elif cfg["mode"] == "conditions":
+            check_conditions_schema(cfg)
+            policy = write_policy_with_conditions_template(db_session, cfg, minimize)
+        print(json.dumps(policy, indent=4))
     #
     # if input_file:
     #     cfg = read_yaml_file(input_file)
@@ -76,4 +87,17 @@ def write_policy_with_template(db_session, cfg, minimize=None):
     """
     sid_group = SidGroup()
     policy = sid_group.process_template(db_session, cfg, minimize)
+    return policy
+
+
+def write_policy_with_conditions_template(db_session, cfg, minimize=None):
+    """
+
+    :param db_session:
+    :param cfg:
+    :param minimize:
+    :return:
+    """
+    conditions_sid_group = ConditionSidGroup()
+    policy = conditions_sid_group.process_template(db_session, cfg, minimize)
     return policy

@@ -1,0 +1,11 @@
+mode: conditions
+read:
+- arn:aws:ssm:us-east-1:123456789012:parameter/test
+lazy-conditions:
+#  - condition_key_string: "ec2:ResourceTag/purpose"
+#    condition_type_string: "StringEquals"
+#    condition_value: "test"
+  - condition_key_string: "ssm:SyncType"
+    condition_type_string: "StringLike"
+    condition_value: "SyncToDestination"
+

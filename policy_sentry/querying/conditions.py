@@ -3,9 +3,9 @@ Methods that execute specific queries against the SQLite database for the CONDIT
 This supports the policy_sentry query functionality
 """
 from sqlalchemy import and_
+from parliament.statement import GLOBAL_CONDITION_KEYS
 from policy_sentry.shared.database import ConditionTable, ActionTable, ArnTable
 from policy_sentry.util.conditions import translate_condition_key_data_types
-from parliament.statement import GLOBAL_CONDITION_KEYS, OPERATORS, get_global_key_type
 
 
 # Per service

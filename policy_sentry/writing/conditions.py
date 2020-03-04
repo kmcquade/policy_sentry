@@ -1,13 +1,14 @@
+# pylint: disable=unused-import,wrong-import-order,missing-module-docstring,no-value-for-parameter,reimported,no-else-raise,missing-function-docstring,logging-format-interpolation,undefined-loop-variable,unused-import,wrong-import-order,unused-argument
+import logging
 from policy_sentry.shared.database import connect_db
 from policy_sentry.querying.conditions import get_condition_key_details, get_condition_keys_for_service, get_condition_value_type
 from policy_sentry.querying.actions import get_actions_matching_condition_crud_and_arn, \
     get_actions_matching_condition_key
 from policy_sentry.analysis.analyze import determine_actions_to_expand
+from policy_sentry.querying.conditions import get_condition_keys_for_service, get_condition_keys_for_service_as_map
 from parliament.statement import GLOBAL_CONDITION_KEYS, OPERATORS, get_global_key_type, \
     is_value_in_correct_format_for_type, translate_documentation_types, is_condition_key_match, get_privilege_info
 from parliament.misc import make_list
-from policy_sentry.querying.conditions import get_condition_keys_for_service, get_condition_keys_for_service_as_map
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -86,7 +87,7 @@ def is_valid_operator(operator):
 
 def is_mismatched_type_set_to_null(operator, condition_block):
     value = "{}".format(list(condition_block.values())[0]).lower()
-    if value != "true" and value != "false":
+    if value not in ("true", "false"):
         raise Exception(f"MISMATCHED_TYPE_OPERATION_TO_NULL: The operator {operator} is set to None")
 
 
