@@ -92,7 +92,9 @@ def get_resource_type_name_with_raw_arn(raw_arn):
     elements = raw_arn.split(":", 5)
     service_prefix = elements[2]
     service_data = get_service_prefix_data(service_prefix)
-
+    result = None
     for resource in service_data["resources"]:
         if resource["arn"].lower() == raw_arn.lower():
-            return resource["resource"]
+            result = resource["resource"]
+            break
+    return result

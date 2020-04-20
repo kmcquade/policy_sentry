@@ -340,3 +340,22 @@ def get_privilege_info(service, action):
                     privilege_info["service_conditions"] = service_info["conditions"]
                     return privilege_info
     raise Exception("Unknown action {}:{}".format(service, action))
+
+
+def get_camelcase_action(action):
+    """
+    Given an action, like s3:getobject, return the action name in proper CamelCase.
+    :param action: an action, like s3:getobject
+    :return:
+    """
+    if action.count(":") is not 1:
+        raise Exception("The action is not formatted properly")
+    service, action_name = action.split(":")
+    result = None
+    for service_info in iam_definition:
+        if service_info["prefix"].lower() == service.lower():
+            for privilege_info in service_info["privileges"]:
+                if privilege_info["privilege"].lower() == action.lower():
+                    result = f"{service_info['prefix']}:privilege_info['privilege']"
+                    break
+    return result

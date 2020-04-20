@@ -55,13 +55,19 @@ def determine_actions_to_expand(action_list):
     :rtype: list
     """
     new_action_list = []
-    for action in range(len(action_list)):
-        if "*" in action_list[action]:
-            expanded_action = expand(action_list[action])
-            new_action_list.extend(expanded_action)
-        else:
-            # If there is no wildcard, copy that action name over to the new_action_list
-            new_action_list.append(action_list[action])
+    for action in action_list:
+        # try:
+        if action:
+            if "*" in action:
+                expanded_action = expand(action)
+                new_action_list.extend(expanded_action)
+            else:
+                # If there is no wildcard, copy that action name over to the new_action_list
+                new_action_list.append(action)
+        # except TypeError as t_e:
+        #     print(t_e)
+        #     import sys
+        #     sys.exit(1)
     new_action_list.sort()
     return new_action_list
 

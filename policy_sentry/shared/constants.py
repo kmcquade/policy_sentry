@@ -40,3 +40,65 @@ LOCAL_ACCESS_OVERRIDES_FILE = os.path.join(
 # Policy constants
 # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_version.html
 POLICY_LANGUAGE_VERSION = "2012-10-17"
+
+
+READ_ONLY_DATA_LEAK_ACTIONS = [
+    "s3:GetObject",
+    "ssm:GetParameter",
+    "ssm:GetParameters",
+    "ssm:GetParametersByPath",
+    "secretsmanager:GetSecretValue"
+]
+
+PRIVILEGE_ESCALATION_METHODS = {
+    # 1. IAM Permissions on Other Users
+    "CreateAccessKey": ["iam:createaccesskey"],
+    "CreateLoginProfile": ["iam:createloginprofile"],
+    "UpdateLoginProfile": ["iam:updateloginprofile"],
+    # 2. Permissions on Policies
+    "CreateNewPolicyVersion": ["iam:createpolicyversion"],
+    "SetExistingDefaultPolicyVersion": ["iam:setdefaultpolicyversion"],
+    "AttachUserPolicy": ["iam:attachuserpolicy"],
+    "AttachGroupPolicy": ["iam:attachgrouppolicy"],
+    "AttachRolePolicy": ["iam:attachrolepolicy", "sts:assumerole"],
+    "PutUserPolicy": ["iam:putuserpolicy"],
+    "PutGroupPolicy": ["iam:putgrouppolicy"],
+    "PutRolePolicy": ["iam:putrolepolicy", "sts:assumerole"],
+    "AddUserToGroup": ["iam:addusertogroup"],
+    # 3. Updating an AssumeRolePolicy
+    "UpdateRolePolicyToAssumeIt": ["iam:updateassumerolepolicy", "sts:assumerole"],
+    # 4. iam:PassRole:*
+    "CreateEC2WithExistingIP": ["iam:passrole", "ec2:runinstances"],
+    "PassExistingRoleToNewLambdaThenInvoke": [
+        "iam:passrole",
+        "lambda:createfunction",
+        "lambda:invokefunction",
+    ],
+    "PassExistingRoleToNewLambdaThenTriggerWithNewDynamo": [
+        "iam:passrole",
+        "lambda:createfunction",
+        "lambda:createeventsourcemapping",
+        "dynamodb:createtable",
+        "dynamodb:putitem",
+    ],
+    "PassExistingRoleToNewLambdaThenTriggerWithExistingDynamo": [
+        "iam:passrole",
+        "lambda:createfunction",
+        "lambda:createeventsourcemapping",
+    ],
+    "PassExistingRoleToNewGlueDevEndpoint": [
+        "iam:passrole",
+        "glue:createdevendpoint",
+    ],
+    "PassExistingRoleToCloudFormation": [
+        "iam:passrole",
+        "cloudformation:createstack",
+    ],
+    "PassExistingRoleToNewDataPipeline": [
+        "iam:passrole",
+        "datapipeline:createpipeline",
+    ],
+    # 5. Privilege Escalation Using AWS Services
+    "UpdateExistingGlueDevEndpoint": ["glue:updatedevendpoint"],
+    "EditExistingLambdaFunctionWithRole": ["lambda:updatefunctioncode"],
+}
