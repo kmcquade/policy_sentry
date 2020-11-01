@@ -20,7 +20,7 @@ importlib-metadata==2.0.0
 invoke==1.4.1
 isort==5.6.4
 Jinja2==3.0.0a1
-joblib==0.16.0
+joblib==0.17.0
 lazy-object-proxy==1.5.1
 livereload==2.6.3
 lunr==0.5.8
