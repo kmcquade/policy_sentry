@@ -15,7 +15,7 @@ future==0.18.2
 gitdb==4.0.5
 GitPython==3.1.11
 idna==2.10
-importlib-metadata==1.7.0
+importlib-metadata==3.1.0
 invoke==1.4.1
 isort==5.4.2
 Jinja2==3.0.0a1
