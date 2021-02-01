@@ -21,7 +21,7 @@ Jinja2==2.11.3
 joblib==1.0.0
 lazy-object-proxy==1.5.2
 livereload==2.6.3
-lunr==0.5.8
+lunr==0.5.9
 Markdown==3.3.3
 MarkupSafe==1.1.1
 mccabe==0.6.1
