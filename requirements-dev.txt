@@ -22,7 +22,7 @@ joblib==1.0.1
 lazy-object-proxy==1.5.2
 livereload==2.6.3
 lunr==0.5.9
-Markdown==3.3.3
+Markdown==3.3.4
 MarkupSafe==1.1.1
 mccabe==0.6.1
 mkdocs==1.1.2
