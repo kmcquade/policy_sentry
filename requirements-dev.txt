@@ -34,7 +34,7 @@ pluggy==0.13.1
 py==1.10.0
 pylint==2.8.3
 pyparsing==2.4.7
-pytest==6.2.2
+pytest==6.2.4
 PyYAML==5.4.1
 regex==2021.3.17
 requests==2.25.1
