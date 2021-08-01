@@ -46,7 +46,7 @@ stevedore==3.3.0
 toml==0.10.2
 tornado==6.1
 tqdm==4.62.0
-typed-ast==1.4.2
+typed-ast==1.4.3
 typing-extensions==3.7.4.3
 urllib3==1.26.4
 wrapt==1.12.1
