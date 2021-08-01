@@ -2,7 +2,7 @@ beautifulsoup4==4.9.3
 certifi==2021.5.30
 chardet==4.0.0
 click==8.0.1
-contextlib2==0.6.0.post1
+contextlib2==21.6.0
 idna==2.10
 PyYAML==5.4.1
 requests==2.25.1
