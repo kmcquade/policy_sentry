@@ -42,7 +42,7 @@ safety==1.10.3
 schema==0.7.4
 six==1.16.0
 soupsieve==2.2.1
-stevedore==3.3.0
+stevedore==3.4.0
 toml==0.10.2
 tornado==6.1
 tqdm==4.59.0
