@@ -7,7 +7,7 @@ black==21.8b0
 certifi==2021.5.30
 chardet==4.0.0
 click==8.0.1
-contextlib2==0.6.0.post1
+contextlib2==21.6.0
 coverage==5.5
 dparse==0.5.1
 future==0.18.2
