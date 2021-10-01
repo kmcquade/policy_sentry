@@ -38,7 +38,7 @@ pyparsing==2.4.7
 regex==2021.9.30
 requests==2.26.0
 six==1.16.0
-stevedore==3.3.0
+stevedore==3.4.0
 toml==0.10.2
 tornado==6.1
 tqdm==4.59.0
