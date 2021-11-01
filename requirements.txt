@@ -1,5 +1,5 @@
 # Command line
-click==8.0.0
+click==8.0.3
 # Web Scraping
 beautifulsoup4==4.9.3
 requests==2.26.0
