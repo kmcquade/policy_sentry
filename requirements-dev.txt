@@ -9,7 +9,7 @@ invoke==1.6.0
 safety==1.10.3
 bandit==1.7.3
 # Formatting
-black==20.8b1
+black==22.1.0
 # Other? Maybe this is from the docs? Not sure.
 # appdirs==1.4.4
 # astroid==2.5.6
