@@ -4,7 +4,7 @@ pylint==3.0.3
 nose==1.3.7
 coverage==7.4.1
 # Integration tests and tasks
-invoke==1.7.0
+invoke==2.2.0
 # Security testing
 safety==1.10.3
 bandit==1.7.4
