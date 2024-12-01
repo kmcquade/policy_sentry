@@ -6,7 +6,7 @@ coverage==7.6.8
 # Integration tests and tasks
 invoke==2.2.0
 # Security testing
-safety==1.10.3
+safety==3.2.11
 bandit==1.7.4
 # Formatting
 black==22.3.0
